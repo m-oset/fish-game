@@ -1,6 +1,5 @@
 CC := g++
-FLAGS := 
-# -O3 -std=c++17 -g -Wall -Wextra -pedantic-errors
+FLAGS := -std=c++17 -g -Wall -Wextra -pedantic-errors
 SFML_LIBS := $(shell pkg-config sfml-all --libs)
 TARGET := fish_game
 
