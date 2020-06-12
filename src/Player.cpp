@@ -3,26 +3,18 @@
 #include "Player.hpp"
 #include <cmath>
 
-
-void Player::update() {
+void Player::update(int width, int height) {
     float s = circle.getRadius() / 209.f;
-    sprite.setScale(s, s);
+    sprite.setScale(s * width / 1920.f, s * height / 1080.f);
 }
 
-void Player::setStartingPosition() {
+void Player::setStartingPosition(int width, int height) {
     dead = false;
-    mass = 500;
-    dir = 0;
-
-    circle.setFillColor(sf::Color::Red);
-    float radius = sqrt(mass);
-    x = 1920.0/2 - radius;
-    y = 1080.0/2 - radius;
-    circle.setRadius(radius);
-    circle.setOrigin({radius, radius});
-    circle.setPosition(x, y);
-    update();
-    sprite.setPosition(x, y);
+    dir = 1;
+	x = width/2.0;
+    y = height/2.0;
+	int x = sprite.getTexture()->getSize().x, y = sprite.getTexture()->getSize().y;
+    sprite.setTextureRect(sf::IntRect(x, 0, -x, y));
 }
 
 int Player::getMass() {
@@ -34,22 +26,22 @@ void Player::draw(sf::RenderWindow & window) {
     // window.draw(circle);
 }
 
-void Player::move(float diff) {
+void Player::move(float diff, int width, int height) {
     // std::cout << event.key.code << "\n";
     bool ndir = dir;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-        x -= 400*diff;
+        x -= 400*diff * width/1920.f;
         ndir = 1;
     }
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-        x += 400*diff;
+        x += 400*diff * width/1920.f;
         ndir = 0;
     }
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-        y -= 300*diff;
+        y -= 300*diff * height/1080.f;
     }
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-        y += 300*diff;
+        y += 300*diff * height/1080.f;
     }
 
     if(ndir != dir) {
@@ -60,6 +52,13 @@ void Player::move(float diff) {
             sprite.setTextureRect(sf::IntRect(x, 0, -x, y));
         }
         dir = ndir;
+    }
+    
+    if(x < -100*(width/1920.f) or x > width + (100*width/1920.f)) {
+        dead = true;
+    }
+    if(y < -100*(height/1080.f) or y > height + (100*height/1080.f)) {
+        dead = true;
     }
 
     circle.setPosition(x, y);
@@ -91,24 +90,26 @@ int Player::getSkin() {
     return cur_texture;
 }
 
-void Player::grow(int fish_mass) {
-    mass += (int)(5*sqrt(fish_mass));
+void Player::grow(int fish_mass, int width, int height) {
+    mass += (int)(2*sqrt(fish_mass));
     float radius = sqrt(mass);
     circle.setRadius(radius);
+    circle.setScale({width/1920.f, height/1080.f});
     circle.setOrigin({radius, radius});
     circle.setPosition(x, y);
     sprite.setPosition(x, y);
-    update();
+    update(width, height);
 }
 
-void Player::setMass(int new_mass) {
+void Player::setMass(int new_mass, int width, int height) {
     mass = new_mass;
     float radius = sqrt(mass);
     circle.setRadius(radius);
+    circle.setScale({width/1920.f, height/1080.f});
     circle.setOrigin({radius, radius});
     circle.setPosition(x, y);
     sprite.setPosition(x, y);
-    update();
+    update(width, height);
 }
 
 bool Player::isDead() {

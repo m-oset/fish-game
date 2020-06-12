@@ -13,7 +13,7 @@ void Game::eat(Fish* fish) {
             player.kill();
         } else if (r1 > r2) {
             fish->kill();
-            player.grow(fish->getMass());
+            player.grow(fish->getMass(), width, height);
         }
     }
 }
@@ -26,9 +26,9 @@ void Game::gameOver() {
         fish.clear();
         isGameOver = true;
 
-        int x = player.getMass() - 500;
+        int x = player.getMass() - default_mass;
         score_text.setString(std::to_string(x));
-        score_text.setPosition(1920/2 - score_text.getGlobalBounds().width/2, 1080/2 - 300 - score_text.getGlobalBounds().height/2);
+        score_text.setPosition(width/2.f - score_text.getGlobalBounds().width/2, height/2.f - 300*height/1080.f - score_text.getGlobalBounds().height/2);
         std::fstream file("wyniki.txt");
         std::vector <int> results;
         int res;
@@ -45,20 +45,21 @@ void Game::gameOver() {
         }
         file.close();
 
-        menu.update();
+        menu.update(width, height);
     }
 }
 
 void Game::startGame() {
     isPause = isGameOver = false;
     gameover_time = 0;
-    player.setStartingPosition();
+    player.setStartingPosition(width, height);
+    player.setMass(default_mass, width, height);
 }
 
 void Game::start() {
     sf::Clock clock;
     window.setFramerateLimit(60);
-    player.setStartingPosition();
+
     while(window.isOpen()) {
         float diff = clock.getElapsedTime().asSeconds();
         clock.restart();
@@ -73,7 +74,7 @@ void Game::start() {
                     isGameOver = false;
                     isPause = true;
                 }
-                if(event.key.code == sf::Keyboard::Space) {
+                if(isPause and event.key.code == sf::Keyboard::Space) {
                     startGame();
                 }
             }
@@ -108,8 +109,8 @@ void Game::start() {
             window.draw(gameoverfish);
             window.draw(score_text);
         } else if(isPause) {
-            player.setPosition(400, 500);
-            player.setMass(10000);
+            player.setPosition(400 * width / 1920.f, 500 * height / 1080.f);
+            player.setMass(10000, width, height);
             window.clear(); 
             window.draw(background);
             menu.draw(window);
@@ -126,15 +127,15 @@ void Game::start() {
 }
 
 void Game::update(float diff){
-    player.move(diff);
+    player.move(diff, width, height);
     for(auto& i : fish) {
-        i->move(diff);
+        i->move(diff, width);
     }
 
     last_spawn += diff;
     if(last_spawn >= 1.5f) {
         last_spawn = 0.f;
-        fish.push_back(new Fish(player.getMass(), player.getSkin()));
+        fish.push_back(new Fish(player.getMass(), player.getSkin(), width, height));
     }
     for(auto& i : fish) {
         eat(i);
@@ -161,20 +162,26 @@ void Game::draw(){
 
 Game::Game() {
     srand(time(0));
-    window.create(sf::VideoMode(1920, 1080), "Fish Game", sf::Style::Close | sf::Style::Titlebar);
+    window.create(sf::VideoMode(width, height), "Fish Game", sf::Style::Fullscreen);
+    menu.update(width, height);
     background_texture.loadFromFile("img/background2.png");
     background.setTexture(background_texture);
     background.setPosition(0, 0);
     background.setTextureRect(sf::IntRect(0, 0, 1920, 1080));
+    background.setScale({width / 1920.f, height / 1080.f});
 
     gameoverfish_texture.loadFromFile("img/dead.png");
     gameoverfish.setTexture(gameoverfish_texture);
-    gameoverfish.setPosition({1920.f/2 - gameoverfish_texture.getSize().x / 2.f, 1080.f/2 - gameoverfish_texture.getSize().y / 2.f});
+    gameoverfish.setScale({width / 1920.f, height / 1080.f});
+    gameoverfish.setPosition({
+        width/2.f - gameoverfish.getGlobalBounds().width / 2.f,
+        height/2.f - gameoverfish.getGlobalBounds().height / 2.f
+    });
 
     font.loadFromFile("img/font.ttf");
     score_text.setFont(font);
     score_text.setCharacterSize(100);
-    score_text.setString("1234567890");
+    score_text.setScale({width / 1920.f, height / 1080.f});
 }
 
 Game::~Game() {

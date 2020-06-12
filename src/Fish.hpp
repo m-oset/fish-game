@@ -13,11 +13,11 @@ class Fish{
 public:
     // void setMass(float Player.mass);
     void draw(sf::RenderWindow & window);
-    void move(float diff);
+    void move(float diff, int width);
     int getMass();
     bool isDead();
     void kill();
     float getRadius();
     sf::Vector2f getPosition();
-    Fish(int player_mass, int skin);
+    Fish(int player_mass, int skin, int width, int height);
 };

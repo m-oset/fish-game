@@ -8,7 +8,6 @@
 
 class Game {
 private:
-    Menu menu;
     sf::RenderWindow window;
     Player player;
     std::vector<Fish*> fish;
@@ -18,6 +17,10 @@ private:
 
     sf::Font font;
     sf::Text score_text;
+
+    int default_mass = 500;
+    int width = 1920, height = 1080;
+    Menu menu;
 
     float last_spawn = 0, gameover_time = 0;
     void eat(Fish* fish);
